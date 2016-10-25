@@ -53,8 +53,6 @@ Add this handler to your logging
 
 data = {}
 
-data[0] = {'name': 'test log', 'log': 'blah blah\nbleh bleh\nok\n'}
-
 #=============================================================================
 # The actual web application now
 #=============================================================================
