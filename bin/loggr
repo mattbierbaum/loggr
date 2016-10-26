@@ -1,9 +1,6 @@
 #!/usr/bin/env python
-import os
-import json
-import base64
+import re
 import string
-import random
 
 import tornado
 import tornado.web
@@ -55,6 +52,30 @@ data = {}
 
 def escape_html(text):
     return text.replace('<', '&lt;').replace('>', '&gt;')
+
+def split_lines_spaces(text, length=70):
+    def signum(x):
+        return (x > 0) - (x < 0)
+
+    # get the next space that is near a line break
+    inds = [m.start() for m in re.finditer(' ', text)]
+    cost = map(lambda x: x-length, inds)
+
+    # if there is no space or line break in the middle, return the text
+    if len(inds) == 0 or signum(cost[0]) == signum(cost[-1]):
+        return text
+
+    # find the space closest to the line break
+    cost = map(abs, cost)
+    cut = inds[cost.index(min(cost))]
+
+    # recursively do line breaks on the rest of the text
+    return '\n    '.join([text[:cut], split_lines_spaces(text[cut+1:], length=length)])
+
+def split_lines_num(text, length=78):
+    if len(text) < length:
+        return text
+    return '\n    '.join([text[:length], split_lines_num(text[length:], length)])
 
 #=============================================================================
 # The actual web application now
@@ -124,9 +145,8 @@ class LogHandler(tornado.web.RequestHandler):
     def get(self, args):
         n = int(args)
         title = '<center><h1>{}</h1></center>\n'.format(data[n]['name'])
-        self.write(INDEX_CONTENT.substitute(
-            favicon=FAVICON, content=title+escape_html(data[n]['log'])
-        ))
+        total = title + split_lines_num(escape_html(data[n]['log']))
+        self.write(INDEX_CONTENT.substitute(favicon=FAVICON, content=total))
         self.finish()
 
     def post(self, args):
