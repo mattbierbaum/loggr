@@ -19,9 +19,9 @@ INDEX_CONTENT = string.Template(
 """<link id="favicon" rel="shortcut icon" type="image/png"  href="data:image/png;base64,$favicon">
 
 <html><head><title>loggr : log share</title></head>
-<body style='background: #486da8;background-size: 100% auto;'>
+<body style='background: #ffffff;background-size: 100% auto;'>
 <center><pre style='font-size:48px;margin:10px;'>LOGGR : LOG SHARING</pre></center>
-<pre style='width:640px;margin:auto;background-color:rgba(255,255,255,0.5);padding:10px;'>
+<pre style='width:640px;margin:auto;background-color:rgba(155,155,155,0.5);padding:10px;'>
 $content</pre></center></body></html>""")
 
 LIST_STRING = string.Template(
@@ -53,14 +53,17 @@ Add this handler to your logging
 
 data = {}
 
+def escape_html(text):
+    return text.replace('<', '&lt;').replace('>', '&gt;')
+
 #=============================================================================
 # The actual web application now
 #=============================================================================
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r"/(new|help)?$", MainHandler),
-            (r"/([0-9]{3})", LogHandler)
+            (r"/+$", MainHandler),
+            (r"/+([0-9]{3})$", LogHandler)
         ]
         super(Application, self).__init__(handlers, gzip=True)
 
@@ -78,7 +81,8 @@ class MainHandler(tornado.web.RequestHandler):
             tail = data[i]['log']
 
             tail = tail[tail.rfind('\n', 0, len(tail)-1):].strip('\n')
-            tail = tail[:80] + '...'
+            tail = tail[:50] + '...'
+            tail = escape_html(tail)
             return LIST_STRING.substitute(
                 num=num, name=name, summary=tail
             )
@@ -104,10 +108,10 @@ class MainHandler(tornado.web.RequestHandler):
         self.write(str(nextlog))
         self.finish()
 
-    def get(self, args):
+    def get(self):
         self.page_home()
 
-    def put(self, args):
+    def put(self):
         self.page_new()
 
 class LogHandler(tornado.web.RequestHandler):
@@ -121,7 +125,7 @@ class LogHandler(tornado.web.RequestHandler):
         n = int(args)
         title = '<center><h1>{}</h1></center>\n'.format(data[n]['name'])
         self.write(INDEX_CONTENT.substitute(
-            favicon=FAVICON, content=title+data[n]['log']
+            favicon=FAVICON, content=title+escape_html(data[n]['log'])
         ))
         self.finish()
 
@@ -137,7 +141,11 @@ class LogHandler(tornado.web.RequestHandler):
         data[num]['log'] = data[num]['log'] + line[0]
 
     def delete(self, args):
-        data.pop(int(args))
+        num = int(args)
+        if num in data:
+            data.pop(num)
+        else:
+            self.error('Log index not found')
 
 if __name__ == "__main__":
     tornado.options.parse_command_line()

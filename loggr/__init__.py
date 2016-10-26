@@ -8,7 +8,7 @@ def get_logurl(url, num):
     return '{}/{:03d}'.format(url, num)
 
 def get_number(url):
-    return int(requests.put('{}/new'.format(url)).text)
+    return int(requests.put('{}'.format(url)).text)
 
 class LoggrHandler(logging.StreamHandler):
     def __init__(self, url, num=None, logname=''):
