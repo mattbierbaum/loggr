@@ -8,5 +8,5 @@ setup(name='loggr',
 
       packages=['loggr'],
       install_requires=["tornado>=4.3"],
-      scripts=['loggr/loggr.py']
+      scripts=['bin/loggr']
 )
