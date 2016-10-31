@@ -7,6 +7,8 @@ import tornado.web
 import tornado.ioloop
 import tornado.options
 
+__version__ = '0.0.5'
+
 tornado.options.options.define("port", default=8888)
 tornado.options.options.define("addr", default="127.0.0.1", help="port to listen on")
 
