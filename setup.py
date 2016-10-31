@@ -6,22 +6,21 @@ from distutils.core import setup
 def read(filename):
     return open(os.path.join(os.path.dirname(__file__), filename)).read()
 
-def version():
-    return re.findall(r".*__version__ = \'(.*)\'.*", read('bin/loggr'))[0]
-
-def readme():
-    return read('README.md')
+try:
+    readme = read('README.md')
+except IOError as e:
+    readme = ''
 
 setup(name='loggr',
       license='MIT License',
       author='Matt Bierbaum',
       url='https://github.com/mattbierbaum/loggr',
-      version=version(),
+      version='0.0.6',
 
       packages=['loggr'],
       install_requires=["tornado>=4.3"],
       scripts=['bin/loggr'],
 
       description='Remote log platform with easy integration into Python logging.',
-      long_description=readme(),
+      long_description=readme,
 )
